@@ -1,5 +1,7 @@
+import json
 import logging
 import os
+from urllib.parse import quote
 
 import mlflow
 import pandas as pd
@@ -78,6 +80,33 @@ def _log_to_mlflow(results: dict, X_test: pd.DataFrame, test_size: float, random
                     input_example=X_test.head(),
                     skops_trusted_types=SKOPS_TRUSTED_TYPES.get(key),
                 )
+
+
+def latest_comparison_url() -> str | None:
+    """Lien MLflow comparant les modèles du dernier entraînement, ou None s'il n'y en a pas encore."""
+    if not _mlflow_available():
+        return None
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    parents = mlflow.search_runs(
+        experiment_names=[MLFLOW_EXPERIMENT],
+        filter_string="attributes.run_name = 'comparaison'",
+        order_by=["attributes.start_time DESC"],
+        max_results=1,
+        output_format="list",
+    )
+    if not parents:
+        return None
+    parent = parents[0]
+    enfants = mlflow.search_runs(
+        experiment_ids=[parent.info.experiment_id],
+        filter_string=f"tags.mlflow.parentRunId = '{parent.info.run_id}'",
+        output_format="list",
+    )
+    if not enfants:
+        return None
+    runs = quote(json.dumps([r.info.run_id for r in enfants], separators=(",", ":")))
+    experiments = quote(json.dumps([parent.info.experiment_id]))
+    return f"{MLFLOW_TRACKING_URI}/#/compare-runs?runs={runs}&experiments={experiments}"
 
 
 def train_models(

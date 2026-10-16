@@ -1,7 +1,7 @@
 import streamlit as st
 import plotly.express as px
 
-from common import AGE_BINS, AGE_LABELS, BLUE, ORANGE, load_data
+from common import AGE_BINS, AGE_LABELS, BLUE, ORANGE, get_trained_models, load_data
 import ml
 
 st.set_page_config(page_title="Prédiction ML — OpenPowerlifting", layout="wide")
@@ -13,11 +13,6 @@ st.caption(
     "Régression linéaire vs. Random Forest vs. KNN, entraînés sur l'ensemble des données "
     "(âge, poids de corps, sexe, équipement) pour prédire le total (kg)."
 )
-
-
-@st.cache_resource(show_spinner="Entraînement des modèles...")
-def get_trained_models(training_df):
-    return ml.train_models(training_df)
 
 
 @st.cache_data(show_spinner="Calcul des prédictions par tranche d'âge...")

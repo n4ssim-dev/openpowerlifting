@@ -4,6 +4,8 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+import ml
+
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "data" / "database.db"
 
@@ -57,3 +59,9 @@ def load_data() -> pd.DataFrame:
     # a handful of source rows carry a stray placing code ("DQ") in this column
     df["coeff_wilks"] = pd.to_numeric(df["coeff_wilks"], errors="coerce")
     return df
+
+
+@st.cache_resource(show_spinner="Entraînement des modèles (une quinzaine de secondes)...")
+def get_trained_models(training_df):
+    # Partagé par toutes les pages : un seul entraînement, un seul enregistrement MLflow.
+    return ml.train_models(training_df)

@@ -12,3 +12,4 @@ uv.lock
 .~lock*
 mlartifacts/
 mlruns/
+logs/
