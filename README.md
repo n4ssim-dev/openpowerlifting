@@ -11,6 +11,7 @@ Prérequis : [uv](https://docs.astral.sh/uv/) et `curl`. Pour le chat, ajouter `
 ./run.sh --check       # vérifications seulement
 ./run.sh --rebuild-db  # recrée data/database.db
 ./run.sh --no-chat     # sans le chat Gradio
+./run.sh --no-browser  # sans ouvrir Streamlit dans le navigateur
 ```
 
 | Service | URL |

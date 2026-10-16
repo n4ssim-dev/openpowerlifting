@@ -6,6 +6,7 @@
 #   ./run.sh --check       vérifications seulement, sans rien lancer
 #   ./run.sh --rebuild-db  supprime et recrée data/database.db depuis Kaggle
 #   ./run.sh --no-chat     ne lance pas le chat Gradio
+#   ./run.sh --no-browser  n'ouvre pas Streamlit dans le navigateur
 #
 # Ports modifiables : MLFLOW_PORT=5001 STREAMLIT_PORT=8502 GRADIO_PORT=7861 ./run.sh
 set -euo pipefail
@@ -22,12 +23,14 @@ TABLES=(dim_rencontre dim_powerlifter dim_division dim_equipement participation_
 CHECK_ONLY=false
 REBUILD_DB=false
 WITH_CHAT=true
+OPEN_BROWSER=true
 for arg in "$@"; do
     case "$arg" in
         --check) CHECK_ONLY=true ;;
         --rebuild-db) REBUILD_DB=true ;;
         --no-chat) WITH_CHAT=false ;;
-        -h|--help) sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        --no-browser) OPEN_BROWSER=false ;;
+        -h|--help) sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) echo "Option inconnue : $arg (voir --help)" >&2; exit 2 ;;
     esac
 done
@@ -233,6 +236,16 @@ else
     echo "    aléatoire » ou page « Prédiction ML ») : les modèles s'entraînent et s'enregistrent dans"
     echo "    MLflow. D'ici là, il n'y a rien à comparer et le chat ne connaît pas les résultats des"
     echo "    modèles. Le lien apparaîtra ensuite via le bouton « Comparaison des modèles » de Streamlit."
+fi
+
+if $OPEN_BROWSER; then
+    if [ "$(uname)" = Darwin ]; then
+        open "http://localhost:$STREAMLIT_PORT"
+    elif [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ] && command -v xdg-open >/dev/null; then
+        xdg-open "http://localhost:$STREAMLIT_PORT" >/dev/null 2>&1 &
+    else
+        warn "Pas d'affichage graphique détecté : ouvre http://localhost:$STREAMLIT_PORT à la main."
+    fi
 fi
 
 echo
