@@ -4,6 +4,9 @@ version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi[standard]>=0.141.1",
+    "gradio>=6.30.0",
+    "groq>=1.7.0",
+    "mlflow>=3.17.1",
     "pandas>=3.0.6",
     "plotly>=5.24.0",
     "scikit-learn>=1.5.0",

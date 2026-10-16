@@ -10,7 +10,7 @@ df = load_data()
 
 st.title("Prédiction ML : total (kg) selon l'âge")
 st.caption(
-    "Régression linéaire vs. Random Forest, entraînées sur l'ensemble des données "
+    "Régression linéaire vs. Random Forest vs. KNN, entraînés sur l'ensemble des données "
     "(âge, poids de corps, sexe, équipement) pour prédire le total (kg)."
 )
 
@@ -18,6 +18,12 @@ st.caption(
 @st.cache_resource(show_spinner="Entraînement des modèles...")
 def get_trained_models(training_df):
     return ml.train_models(training_df)
+
+
+@st.cache_data(show_spinner="Calcul des prédictions par tranche d'âge...")
+def get_age_bracket_comparison(training_df, model_key, _pipeline):
+    # _pipeline is excluded from the cache key; model_key identifies it.
+    return ml.age_bracket_comparison(training_df, _pipeline, AGE_BINS, AGE_LABELS)
 
 
 models = get_trained_models(df)
@@ -31,7 +37,7 @@ model_key = st.selectbox(
     list(models.keys()),
     format_func=lambda k: models[k]["label"],
 )
-comparison = ml.age_bracket_comparison(df, models[model_key]["pipeline"], AGE_BINS, AGE_LABELS)
+comparison = get_age_bracket_comparison(df, model_key, models[model_key]["pipeline"])
 comparison_long = comparison.melt(
     id_vars="tranche_age",
     value_vars=["total_kg_reel", "total_kg_predit"],
