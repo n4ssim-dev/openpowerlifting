@@ -1,4 +1,4 @@
--- Star schema fitted to data/csv/openpowerlifting.csv (facts) and data/csv/meets.csv (dim_rencontre)
+-- Star schema fitted to openpowerlifting.csv (facts) and meets.csv (dim_rencontre) from the Kaggle dataset dansbecker/powerlifting-database
 
 CREATE TABLE dim_rencontre(
    id_rencontre INT,               -- MeetID

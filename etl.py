@@ -1,10 +1,11 @@
 import sqlite3
 from pathlib import Path
 
+import kagglehub
 import pandas as pd
 
 BASE_DIR = Path(__file__).resolve().parent
-CSV_DIR = BASE_DIR / "data" / "csv"
+KAGGLE_DATASET = "dansbecker/powerlifting-database"
 DB_PATH = BASE_DIR / "data" / "database.db"
 SQL_PATH = BASE_DIR / "data" / "sql" / "create_tables.sql"
 
@@ -15,8 +16,13 @@ def create_tables(nom_fichier, con):
     con.executescript(sql_query)
 
 
-def load_meets():
-    df = pd.read_csv(CSV_DIR / "meets.csv")
+def download_dataset() -> Path:
+    # Téléchargé une fois puis réutilisé depuis le cache de kagglehub (~/.cache/kagglehub).
+    return Path(kagglehub.dataset_download(KAGGLE_DATASET))
+
+
+def load_meets(csv_dir):
+    df = pd.read_csv(csv_dir / "meets.csv")
     return df.rename(columns={
         "MeetID": "id_rencontre",
         "MeetPath": "meet_path",
@@ -29,8 +35,8 @@ def load_meets():
     })
 
 
-def load_performances():
-    df = pd.read_csv(CSV_DIR / "openpowerlifting.csv", low_memory=False)
+def load_performances(csv_dir):
+    df = pd.read_csv(csv_dir / "openpowerlifting.csv", low_memory=False)
     df = df.loc[:, ~df.columns.str.startswith("Unnamed")]
     return df.rename(columns={
         "MeetID": "id_rencontre",
@@ -102,11 +108,11 @@ def build_fait_performance(perf):
     return fact[cols]
 
 
-def load_data(con):
-    dim_rencontre = load_meets()
+def load_data(con, csv_dir):
+    dim_rencontre = load_meets(csv_dir)
     dim_rencontre.to_sql("dim_rencontre", con, if_exists="append", index=False)
 
-    perf = load_performances()
+    perf = load_performances(csv_dir)
 
     build_dim_powerlifter(perf).to_sql("dim_powerlifter", con, if_exists="append", index=False)
     build_dim_division(perf).to_sql("dim_division", con, if_exists="append", index=False)
@@ -120,11 +126,12 @@ def load_data(con):
 
 
 def main():
+    csv_dir = download_dataset()
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     con = sqlite3.connect(DB_PATH)
     try:
         create_tables(SQL_PATH, con)
-        load_data(con)
+        load_data(con, csv_dir)
         con.commit()
     finally:
         con.close()
