@@ -241,6 +241,8 @@ fi
 if $OPEN_BROWSER; then
     if [ "$(uname)" = Darwin ]; then
         open "http://localhost:$STREAMLIT_PORT"
+    elif [[ "$(uname)" == MINGW* || "$(uname)" == MSYS* ]]; then
+        start "" "http://localhost:$STREAMLIT_PORT"
     elif [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ] && command -v xdg-open >/dev/null; then
         xdg-open "http://localhost:$STREAMLIT_PORT" >/dev/null 2>&1 &
     else
